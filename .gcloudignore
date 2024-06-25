@@ -1,0 +1,33 @@
+# .gcloudignore
+# Python specific
+*.pyc
+*.pyo
+__pycache__
+
+# Virtual environments
+.venv
+env/
+venv/
+
+# Editor files
+*.swp
+*~
+.idea/
+.vscode/
+.DS_Store
+
+# Logs
+*.log
+*.gz
+
+# Git
+.git/
+.gitignore
+
+# Node.js
+node_modules/
+npm-debug.log
+
+# Other
+*.zip
+*.tar.gz

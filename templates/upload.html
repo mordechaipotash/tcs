@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Form Data Extractor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6 text-center">PDF Form Data Extractor</h1>
+        <form id="uploadForm" class="space-y-4">
+            <div class="flex items-center justify-center w-full">
+                <label for="file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                        <p class="text-xs text-gray-500">PDF file (MAX. 10MB)</p>
+                    </div>
+                    <input id="file" type="file" class="hidden" accept=".pdf" />
+                </label>
+            </div>
+            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                Extract Data
+            </button>
+        </form>
+        <div id="loading" class="hidden mt-8 text-center">
+            <svg class="animate-spin h-8 w-8 text-gray-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <p class="mt-2 text-sm text-gray-500">Processing...</p>
+        </div>
+        <div id="result" class="mt-8 hidden">
+            <h2 class="text-xl font-semibold mb-4">Extracted Data:</h2>
+            <div id="formResults" class="space-y-8"></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData();
+            var fileInput = document.getElementById('file');
+            formData.append('file', fileInput.files[0]);
+
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('result').classList.add('hidden');
+
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('result').classList.remove('hidden');
+                const formResults = document.getElementById('formResults');
+                formResults.innerHTML = '';
+                
+                for (const [formKey, formData] of Object.entries(data.all_data)) {
+                    const formDiv = document.createElement('div');
+                    formDiv.className = 'bg-gray-50 p-4 rounded-lg mb-4';
+                    
+                    const formTitle = document.createElement('h3');
+                    formTitle.className = 'text-lg font-semibold mb-2';
+                    formTitle.textContent = `Form ${formKey.slice(-1)}`;
+                    formDiv.appendChild(formTitle);
+                    
+                    if (formData.image_url) {
+                        const image = document.createElement('img');
+                        image.src = formData.image_url;
+                        image.className = 'w-full mb-4';
+                        formDiv.appendChild(image);
+                    }
+                    
+                    const resultsDiv = document.createElement('div');
+                    resultsDiv.className = 'grid grid-cols-2 gap-4';
+                    
+                    for (const model of ['claude-3.5-sonnet', 'gpt-4o']) {
+                        if (!formData.extracted_data[model]) continue;
+                        const modelDiv = document.createElement('div');
+                        modelDiv.className = 'bg-white p-4 rounded shadow';
+                        
+                        const modelTitle = document.createElement('h4');
+                        modelTitle.className = 'font-semibold mb-2';
+                        modelTitle.textContent = model;
+                        modelDiv.appendChild(modelTitle);
+                        
+                        const pre = document.createElement('pre');
+                        pre.className = 'bg-gray-100 p-2 rounded overflow-x-auto text-sm';
+                        pre.textContent = JSON.stringify(formData.extracted_data[model].extracted_data, null, 2);
+                        modelDiv.appendChild(pre);
+                        
+                        const costDiv = document.createElement('div');
+                        costDiv.className = 'mt-2 text-sm';
+                        costDiv.innerHTML = `
+                            <p>Input cost: $${formData.extracted_data[model].costs.input.toFixed(6)}</p>
+                            <p>Output cost: $${formData.extracted_data[model].costs.output.toFixed(6)}</p>
+                            <p><strong>Total cost: $${formData.extracted_data[model].costs.total.toFixed(6)}</strong></p>
+                        `;
+                        modelDiv.appendChild(costDiv);
+                        
+                        resultsDiv.appendChild(modelDiv);
+                    }
+                    
+                    formDiv.appendChild(resultsDiv);
+                    formResults.appendChild(formDiv);
+                }
+
+                // Display agreed-upon data
+                const agreedDiv = document.createElement('div');
+                agreedDiv.className = 'bg-green-50 p-4 rounded-lg mb-4';
+                const agreedTitle = document.createElement('h3');
+                agreedTitle.className = 'text-lg font-semibold mb-2';
+                agreedTitle.textContent = 'Agreed-Upon Data';
+                agreedDiv.appendChild(agreedTitle);
+                const agreedPre = document.createElement('pre');
+                agreedPre.className = 'bg-white p-2 rounded overflow-x-auto text-sm';
+                agreedPre.textContent = JSON.stringify(data.agreed_upon, null, 2);
+                agreedDiv.appendChild(agreedPre);
+                formResults.appendChild(agreedDiv);
+
+                // Display differences
+                const diffDiv = document.createElement('div');
+                diffDiv.className = 'bg-yellow-50 p-4 rounded-lg mb-4';
+                const diffTitle = document.createElement('h3');
+                diffTitle.className = 'text-lg font-semibold mb-2';
+                diffTitle.textContent = 'Differences';
+                diffDiv.appendChild(diffTitle);
+                const diffPre = document.createElement('pre');
+                diffPre.className = 'bg-white p-2 rounded overflow-x-auto text-sm';
+                diffPre.textContent = JSON.stringify(data.differences, null, 2);
+                diffDiv.appendChild(diffPre);
+                formResults.appendChild(diffDiv);
+
+                // Display total costs
+                const costDiv = document.createElement('div');
+                costDiv.className = 'bg-blue-50 p-4 rounded-lg mb-4';
+                const costTitle = document.createElement('h3');
+                costTitle.className = 'text-lg font-semibold mb-2';
+                costTitle.textContent = 'Total Costs';
+                costDiv.appendChild(costTitle);
+                const costContent = document.createElement('div');
+                costContent.innerHTML = `
+                    <p><strong>Claude 3.5 Sonnet:</strong> $${data.total_costs['claude-3.5-sonnet'].toFixed(6)}</p>
+                    <p><strong>GPT-4o:</strong> $${data.total_costs['gpt-4o'].toFixed(6)}</p>
+                `;
+                costDiv.appendChild(costContent);
+                formResults.appendChild(costDiv);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing the file.');
+                document.getElementById('loading').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
