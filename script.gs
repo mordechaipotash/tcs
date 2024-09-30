@@ -72,6 +72,7 @@ function fetchEmailsWithAttachments() {
       console.log('Email insertion response headers:', emailResponse.getAllHeaders());
       console.log('Email insertion response:', emailResponse.getContentText());
       console.log('API Key sent:', API_KEY);
+      console.log('API Key length:', API_KEY.length);
 
       if (emailResponse.getResponseCode() !== 200) {
         status = 'Failed';
