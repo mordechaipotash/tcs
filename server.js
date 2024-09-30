@@ -34,6 +34,10 @@ app.use((req, res, next) => {
 
 app.use(json());
 
+app.get('/', (req, res) => {
+  res.status(200).send('Server is running');
+});
+
 app.post('/insert-email', async (req, res) => {
   console.log('Received email insertion request:', req.body);
   const { email_id, from_email, to_email, subject, body, received_date, has_attachments, processed, error } = req.body;
