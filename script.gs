@@ -6,11 +6,12 @@ function fetchEmailsWithAttachments() {
   const SUPABASE_URL = 'https://pbuqlylgktjdhjqkvwnv.supabase.co';
   const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBidXFseWxna3RqZGhqcWt2d252Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNTIzMzA5NCwiZXhwIjoyMDQwODA5MDk0fQ.NIQG_erHl4XOpknbn2qw6C0U3wo0jwImzywLoxG1aeU';
   const PDF_BUCKET_NAME = 'attachments';
+  const API_KEY = 'Xt7P9zKm3Qf6Lw2Ry8Nh1Jb4Vg5Cs0Zd';
 
-  const START_DATE = '2024/09/12';
-  const END_DATE = '2024/09/20';
+  const START_DATE = '2023/09/12'; // Updated to a past date
+  const END_DATE = '2023/09/20';
 
-  // **Access the Google Sheet and the specific sheet/tab**
+  // Access the Google Sheet and the specific sheet/tab
   const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
   const sheet = spreadsheet.getSheetByName(SHEET_NAME);
   
@@ -19,12 +20,12 @@ function fetchEmailsWithAttachments() {
     'Attachment Name', 'Attachment URL', 'Timestamp', 'Status', 'Error'
   ];
 
-  // **Set Headers if the sheet is empty**
+  // Set Headers if the sheet is empty
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(headers);
   }
 
-  // **Define Gmail search query for the fixed date range and attachments**
+  // Define Gmail search query for the fixed date range and attachments
   const QUERY = `after:${START_DATE} before:${END_DATE} has:attachment`;
   const threads = GmailApp.search(QUERY);
 
@@ -44,7 +45,7 @@ function fetchEmailsWithAttachments() {
       const receivedDate = message.getDate().toISOString();
       const hasAttachments = message.getAttachments().length > 0;
 
-      // **Insert email metadata using the API URL to Vercel deployment**
+      // Insert email metadata using the API URL to Vercel deployment
       const emailPayload = {
         email_id: emailId,
         from_email: from,
@@ -57,8 +58,6 @@ function fetchEmailsWithAttachments() {
         error: null
       };
 
-      const API_KEY = 'Xt7P9zKm3Qf6Lw2Ry8Nh1Jb4Vg5Cs0Zd';
-
       const emailResponse = UrlFetchApp.fetch(EMAIL_API_URL, {
         method: 'post',
         contentType: 'application/json',
@@ -68,17 +67,20 @@ function fetchEmailsWithAttachments() {
         payload: JSON.stringify(emailPayload),
         muteHttpExceptions: true
       });
+      
       console.log('Email insertion response code:', emailResponse.getResponseCode());
       console.log('Email insertion response headers:', emailResponse.getAllHeaders());
       console.log('Email insertion response:', emailResponse.getContentText());
       console.log('API Key sent:', API_KEY);
       console.log('API Key length:', API_KEY.length);
 
+      let status = 'Success';
+      let error = null;
+
       if (emailResponse.getResponseCode() !== 200) {
         status = 'Failed';
         error = `Status Code: ${emailResponse.getResponseCode()}, Content: ${emailResponse.getContentText()}`;
         console.log('Email insertion error:', error);
-        // Log the full request details
         console.log('Request details:', JSON.stringify({
           url: EMAIL_API_URL,
           method: 'POST',
@@ -90,17 +92,17 @@ function fetchEmailsWithAttachments() {
         }, null, 2));
       }
 
-      // **Process attachments**
+      // Process attachments
       const attachments = message.getAttachments();
       attachments.forEach(att => {
         const attachmentName = att.getName();
-        const uniqueId = Utilities.getUuid(); // Generate a unique identifier
-        const uniqueAttachmentName = `${attachmentName}_${uniqueId}`; // Append the UUID to the attachment name
-        const attachmentData = att.getBytes(); // Send the binary data directly
+        const uniqueId = Utilities.getUuid();
+        const uniqueAttachmentName = `${attachmentName}_${uniqueId}`;
+        const attachmentData = att.getBytes();
         const attachmentType = att.getContentType();
         const attachmentSize = attachmentData.length;
 
-        // **Upload attachment to Supabase Storage**
+        // Upload attachment to Supabase Storage
         const attachmentUrl = uploadToSupabase(uniqueAttachmentName, attachmentData, attachmentType);
 
         if (!attachmentUrl) {
@@ -108,11 +110,11 @@ function fetchEmailsWithAttachments() {
           error = `Failed to upload file ${uniqueAttachmentName}`;
         }
 
-        // **Log metadata to Google Sheet**
+        // Log metadata to Google Sheet
         const timestamp = new Date().toISOString();
         sheet.appendRow([emailId, thread.getId(), from, to, subject, body, uniqueAttachmentName, attachmentUrl, timestamp, status, error]);
 
-        // **Insert attachment metadata using the API URL to Vercel deployment if upload succeeded**
+        // Insert attachment metadata using the API URL to Vercel deployment if upload succeeded
         if (attachmentUrl) {
           const attachmentPayload = {
             email_id: emailId,
@@ -152,10 +154,10 @@ function uploadToSupabase(fileName, fileData, contentType) {
   const options = {
     method: 'POST',
     headers: {
-      "Content-Type": contentType, // Use the actual content type of the file
+      "Content-Type": contentType,
       "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`
     },
-    payload: fileData, // Send the binary data directly
+    payload: fileData,
     muteHttpExceptions: true
   };
   const response = UrlFetchApp.fetch(url, options);
