@@ -8,14 +8,6 @@
     ],
     "routes": [
       {
-        "src": "/insert-email",
-        "dest": "server.js"
-      },
-      {
-        "src": "/insert-attachment",
-        "dest": "server.js"
-      },
-      {
         "src": "/(.*)",
         "dest": "server.js"
       }
