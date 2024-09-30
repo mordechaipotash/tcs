@@ -6,6 +6,15 @@ const app = express();
 
 require('dotenv').config();
 
+console.log('Environment variables:', {
+  POSTGRES_USER: process.env.POSTGRES_USER,
+  POSTGRES_HOST: process.env.POSTGRES_HOST,
+  POSTGRES_DATABASE: process.env.POSTGRES_DATABASE,
+  PORT: process.env.PORT,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  API_KEY: process.env.API_KEY,
+});
+
 const pool = new Pool({
   user: process.env.POSTGRES_USER,
   host: process.env.POSTGRES_HOST,
@@ -50,7 +59,7 @@ app.post('/insert-email', async (req, res) => {
     );
     res.status(200).send({ success: true, email_id: result.rows[0].id });
   } catch (err) {
-    console.error(err);
+    console.error('Error in /insert-email:', err);
     res.status(500).send({ success: false, error: err.message });
   }
 });
@@ -67,9 +76,14 @@ app.post('/insert-attachment', async (req, res) => {
     );
     res.status(200).send({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error('Error in /insert-attachment:', err);
     res.status(500).send({ success: false, error: err.message });
   }
+});
+
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).send('Internal Server Error');
 });
 
 module.exports = app;
