@@ -68,11 +68,24 @@ function fetchEmailsWithAttachments() {
         payload: JSON.stringify(emailPayload),
         muteHttpExceptions: true
       });
+      console.log('Email insertion response code:', emailResponse.getResponseCode());
+      console.log('Email insertion response headers:', emailResponse.getAllHeaders());
       console.log('Email insertion response:', emailResponse.getContentText());
 
       if (emailResponse.getResponseCode() !== 200) {
         status = 'Failed';
-        error = `Status Code: ${emailResponse.getResponseCode()}, Content: ${emailResponse.getContentText().substring(0, 500)}`;
+        error = `Status Code: ${emailResponse.getResponseCode()}, Content: ${emailResponse.getContentText()}`;
+        console.log('Email insertion error:', error);
+        // Log the full request details
+        console.log('Request details:', JSON.stringify({
+          url: EMAIL_API_URL,
+          method: 'POST',
+          headers: {
+            'X-API-Key': API_KEY,
+            'Content-Type': 'application/json'
+          },
+          payload: emailPayload
+        }, null, 2));
       }
 
       // **Process attachments**
