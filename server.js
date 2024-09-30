@@ -53,9 +53,14 @@ app.use((req, res, next) => {
     console.log('Received API Key:', apiKey);
     console.log('Expected API Key:', process.env.API_KEY);
     console.log('API Key match:', apiKey === process.env.API_KEY);
+    console.log('API Key length match:', apiKey?.length === process.env.API_KEY?.length);
     if (!apiKey || apiKey !== process.env.API_KEY) {
       console.log('Unauthorized access attempt');
-      return res.status(401).json({ error: 'Unauthorized', receivedKey: apiKey });
+      return res.status(401).json({ 
+        error: 'Unauthorized', 
+        receivedKeyLength: apiKey ? apiKey.length : 0,
+        expectedKeyLength: process.env.API_KEY ? process.env.API_KEY.length : 0
+      });
     }
     console.log('API Key validated successfully');
     next();
@@ -106,6 +111,10 @@ app.post('/insert-attachment', async (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).send('Internal Server Error');
+});
+
+app.get('/test', (req, res) => {
+  res.status(200).json({ message: 'Test endpoint working' });
 });
 
 module.exports = app;
