@@ -1,12 +1,12 @@
 function fetchEmailsWithAttachments() {
   const SHEET_ID = '10ubu2xPppsNRCMGo-63ZwpCVhCBxhRyzgfnLqduF71w';
   const SHEET_NAME = 'gmail';
-  const EMAIL_API_URL = 'https://email-attachment-logger-5amfbb6wi-mordechaipotashs-projects.vercel.app/insert-email';
-  const ATTACHMENT_API_URL = 'https://email-attachment-logger-5amfbb6wi-mordechaipotashs-projects.vercel.app/insert-attachment';
-  const SUPABASE_URL = 'https://pbuqlylgktjdhjqkvwnv.supabase.co';
-  const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBidXFseWxna3RqZGhqcWt2d252Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNTIzMzA5NCwiZXhwIjoyMDQwODA5MDk0fQ.NIQG_erHl4XOpknbn2qw6C0U3wo0jwImzywLoxG1aeU';
+  const EMAIL_API_URL = PropertiesService.getScriptProperties().getProperty('EMAIL_API_URL');
+  const ATTACHMENT_API_URL = PropertiesService.getScriptProperties().getProperty('ATTACHMENT_API_URL');
+  const SUPABASE_URL = PropertiesService.getScriptProperties().getProperty('SUPABASE_URL');
+  const SUPABASE_SERVICE_KEY = PropertiesService.getScriptProperties().getProperty('SUPABASE_SERVICE_KEY');
   const PDF_BUCKET_NAME = 'attachments';
-  const API_KEY = 'Xt7P9zKm3Qf6Lw2Ry8Nh1Jb4Vg5Cs0Zd';
+  const API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY');
 
   const START_DATE = '2023/09/12'; // Updated to a past date
   const END_DATE = '2023/09/20';
