@@ -19,12 +19,16 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 const API_KEY = process.env.API_KEY;
 
 app.use((req, res, next) => {
+  console.log('Received request headers:', JSON.stringify(req.headers, null, 2));
   console.log('Received API Key:', req.get('X-API-Key'));
   console.log('Expected API Key:', API_KEY);
+  console.log('API_KEY from environment:', process.env.API_KEY);
   const apiKey = req.get('X-API-Key');
   if (!apiKey || apiKey !== API_KEY) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    console.log('Unauthorized access attempt');
+    return res.status(401).json({ error: 'Unauthorized', receivedKey: apiKey, expectedKey: API_KEY });
   }
+  console.log('API Key validated successfully');
   next();
 });
 
