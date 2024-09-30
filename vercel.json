@@ -1,0 +1,31 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "server.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/insert-email",
+        "dest": "server.js"
+      },
+      {
+        "src": "/insert-attachment",
+        "dest": "server.js"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "server.js"
+      }
+    ],
+    "projectSettings": {
+      "framework": null,
+      "buildCommand": null,
+      "devCommand": null,
+      "installCommand": null,
+      "outputDirectory": null,
+      "rootDirectory": null
+    }
+  }
