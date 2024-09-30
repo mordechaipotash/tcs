@@ -49,16 +49,17 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-  const apiKey = req.get('X-API-Key');
-  console.log('Received API Key:', apiKey);
-  console.log('Expected API Key:', API_KEY);
-  if (!apiKey || apiKey !== API_KEY) {
-    console.log('Unauthorized access attempt');
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  console.log('API Key validated successfully');
-  next();
-});
+    const apiKey = req.get('X-API-Key');
+    console.log('Received API Key:', apiKey);
+    console.log('Expected API Key:', process.env.API_KEY);
+    console.log('API Key match:', apiKey === process.env.API_KEY);
+    if (!apiKey || apiKey !== process.env.API_KEY) {
+      console.log('Unauthorized access attempt');
+      return res.status(401).json({ error: 'Unauthorized', receivedKey: apiKey });
+    }
+    console.log('API Key validated successfully');
+    next();
+  });
 
 app.use(json());
 
