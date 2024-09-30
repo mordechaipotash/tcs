@@ -19,6 +19,8 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 const API_KEY = process.env.API_KEY;
 
 app.use((req, res, next) => {
+  console.log('Received API Key:', req.get('X-API-Key'));
+  console.log('Expected API Key:', API_KEY);
   const apiKey = req.get('X-API-Key');
   if (!apiKey || apiKey !== API_KEY) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -29,6 +31,7 @@ app.use((req, res, next) => {
 app.use(json());
 
 app.post('/insert-email', async (req, res) => {
+  console.log('Received email insertion request:', req.body);
   const { email_id, from_email, to_email, subject, body, received_date, has_attachments, processed, error } = req.body;
 
   try {
@@ -45,6 +48,7 @@ app.post('/insert-email', async (req, res) => {
 });
 
 app.post('/insert-attachment', async (req, res) => {
+  console.log('Received attachment insertion request:', req.body);
   const { email_id, file_name, file_size, file_type, storage_path, processed, error, public_url } = req.body;
 
   try {
