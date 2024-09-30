@@ -64,7 +64,7 @@ app.use((req, res, next) => {
     }
     console.log('API Key validated successfully');
     next();
-  });
+});
 
 app.use(json());
 
