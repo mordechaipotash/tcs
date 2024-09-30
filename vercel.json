@@ -11,13 +11,5 @@
         "src": "/(.*)",
         "dest": "server.js"
       }
-    ],
-    "projectSettings": {
-      "framework": null,
-      "buildCommand": null,
-      "devCommand": null,
-      "installCommand": null,
-      "outputDirectory": null,
-      "rootDirectory": null
-    }
-  }
+    ]
+}
